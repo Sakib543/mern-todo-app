@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { MdOutlineDone } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
 import { MdModeEditOutline } from "react-icons/md";
@@ -11,8 +11,7 @@ function App() {
   const [newTodo, setNewTodo] = useState("");
   const [todos, setTodos] = useState([]);
   const [editingTodo, setEditingTodo] = useState(null);
-  const [editingText , setEditingText] = useState("")
-
+  const [editingText, setEditingText] = useState("");
 
   const addTodo = async (e) => {
     e.preventDefault();
@@ -27,6 +26,18 @@ function App() {
       console.log("TODO add nhii kr raha", error);
     }
   };
+
+  const saveEdit = async (id) => {
+    try {
+      const response = await axios.patch(`/api/todos${id}`, {
+        text: editingText
+      });
+      setTodos(todos.map((todo) => (todo._id === id ? response.data:todo)))
+    } catch (error) {
+      console.log("Todo Update nhii ho raha:",error);
+    }
+  };
+
   const fetchTodos = async () => {
     try {
       const response = await axios.get("/api/todos");
@@ -40,17 +51,18 @@ function App() {
     fetchTodos();
   }, []);
 
-  const startEditing =(todo)=>{
+  const startEditing = (todo) => {
     setEditingTodo(todo._id);
     setEditingText(todo.text);
-  }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from gray-50 to-blue-500 flex justify-center items-center p-4">
       <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-lg">
         <div>
-          <h1 className="text-4xl font-bold text-gray-600 mb-8">
+          <h1 className="text-5xl font-bold text-blue-600 mb-8 text-center text-shadow-lg">
             Task Manager
           </h1>
+          <hr className="mb-7 text-gray-300" />
           <form
             onSubmit={addTodo}
             className="flex items-center gap-2 p-2 border border-gray-200 rounded-lg shadow-md"
@@ -60,7 +72,7 @@ function App() {
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
               placeholder="what needs to be done?"
-              className="px-3 py-2 text-blue-500 outline-none placeholder-blue-400 flex-1"
+              className="px-3 py-2 text-blue-500 outline-none placeholder-gray-400 flex-1"
               required
             />
             <button
@@ -70,7 +82,7 @@ function App() {
               Add Task
             </button>
           </form>
-          <div>
+          <div className="mt-8">
             {todos.length === 0 ? (
               <div></div>
             ) : (
@@ -79,18 +91,53 @@ function App() {
                   <div key={todo._id}>
                     {editingTodo === todo._id ? (
                       <div className="flex items-center gap-x-2">
-                        <input className="p-3 border border-blue-200" type="text" value={editingText} onChange={(e)=> setEditingText(e.target.value)}/>
-                       <div className="flex gap-2">
-                         <button><MdOutlineDone/></button>
-                        <button onClick={()=> setEditingTodo(null)}><IoClose/></button>
-                       </div>
+                        <input
+                          className="flex-1 p-3 border border-blue-100 rounded-lg outline-none ring-1 focus:ring-blue-300 text-blue-700 shaddow-md font-bold"
+                          type="text"
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={()=> saveEdit(todo._id)} className="px-2 py-2 bg-blue-600 text-white rounded-md hover:bg-green-700 duration-300 shadow-md font-medium cursor-pointer">
+                            <MdOutlineDone />
+                          </button>
+                          <button
+                            onClick={() => setEditingTodo(null)}
+                            className="px-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 duration-300 shadow-md font-medium cursor-pointer"
+                          >
+                            {" "}
+                            <IoClose />
+                          </button>
+                        </div>
                       </div>
-                    ):(
-                      <div>
-                        <div> 
-                          {todo.text}
-                          <button onClick={() => startEditing(todo)}><MdModeEditOutline/></button>
-                          <button><FaTrash/>  </button>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-x-4">
+                          <button
+                            className={`h-6 w-6 border rounded-full flex items-center justify-center ${
+                              todo.completed
+                                ? "bg-green-600 border-green-500"
+                                : "border-gray-300 hover:border-blue-400"
+                            }`}
+                          >
+                            {todo.completed && (
+                              <MdOutlineDone className="text-white" />
+                            )}
+                          </button>
+                          <span className="text-gray-700 font-bold">
+                            {todo.text}
+                          </span>
+                        </div>
+                        <div className="flex gap-x-2 mt-2">
+                          <button
+                            onClick={() => startEditing(todo)}
+                            className="px-2 py-2 bg-green-400 text-white rounded-md hover:bg-green-700 duration-300 shadow-md font-medium cursor-pointer"
+                          >
+                            <MdModeEditOutline />
+                          </button>
+                          <button className="px-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 duration-300 shadow-md font-medium cursor-pointer">
+                            <FaTrash />
+                          </button>
                         </div>
                       </div>
                     )}
