@@ -13,11 +13,12 @@ function App() {
   const [editingTodo, setEditingTodo] = useState(null);
   const [editingText, setEditingText] = useState("");
 
+  //Add data to todo list
   const addTodo = async (e) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
     try {
-      const response = await axios.post("http://localhost:5000/api/todos", {
+      const response = await axios.post("/api/todos", {
         text: newTodo,
       });
       setTodos([...todos, response.data]);
@@ -26,22 +27,10 @@ function App() {
       console.log("TODO add nhii kr raha", error);
     }
   };
-
-  const saveEdit = async (id) => {
-    try {
-      const response = await axios.patch(`/api/todos${id}`, {
-        text: editingText
-      });
-      setTodos(todos.map((todo) => (todo._id === id ? response.data:todo)))
-    } catch (error) {
-      console.log("Todo Update nhii ho raha:",error);
-    }
-  };
-
+  //Get all todos list
   const fetchTodos = async () => {
     try {
       const response = await axios.get("/api/todos");
-      console.log(response.data);
       setTodos(response.data);
     } catch (error) {
       console.log("Get Fetch Not working", error);
@@ -55,6 +44,45 @@ function App() {
     setEditingTodo(todo._id);
     setEditingText(todo.text);
   };
+
+  //update the todo list
+  // Update the todo list
+  const saveEdit = async (id) => {
+    if (!editingText.trim()) return;
+    try {
+      const response = await axios.patch(`/api/todos/${id}`, {
+        text: editingText,
+      });
+      setTodos(todos.map((todo) => (todo._id === id ? response.data : todo)));
+      setEditingTodo(null);
+      setEditingText("");
+    } catch (error) {
+      console.error("Error updating todo:", error);
+    }
+  };
+
+  // Toggle completed status
+  const toggleTodo = async (id) => {
+    try {
+      const todo = todos.find((t) => t._id === id);
+      const response = await axios.patch(`/api/todos/${id}`, {
+        completed: !todo.completed,
+      });
+      setTodos(todos.map((t) => (t._id === id ? response.data : t)));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  //Delete Todo
+  const deleteTodo = async (id) => {
+    try {
+      await axios.delete(`/api/todos/${id}`);
+      setTodos(todos.filter((todo) => todo._id !== id));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from gray-50 to-blue-500 flex justify-center items-center p-4">
       <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-lg">
@@ -98,14 +126,19 @@ function App() {
                           onChange={(e) => setEditingText(e.target.value)}
                         />
                         <div className="flex gap-2">
-                          <button onClick={()=> saveEdit(todo._id)} className="px-2 py-2 bg-blue-600 text-white rounded-md hover:bg-green-700 duration-300 shadow-md font-medium cursor-pointer">
+                          <button
+                            onClick={() => saveEdit(todo._id)}
+                            className="px-2 py-2 bg-blue-600 text-white rounded-md hover:bg-green-700 duration-300 shadow-md font-medium cursor-pointer"
+                          >
                             <MdOutlineDone />
                           </button>
                           <button
-                            onClick={() => setEditingTodo(null)}
+                            onClick={() => {
+                              setEditingTodo(null);
+                              setEditingText("");
+                            }}
                             className="px-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 duration-300 shadow-md font-medium cursor-pointer"
                           >
-                            {" "}
                             <IoClose />
                           </button>
                         </div>
@@ -114,15 +147,15 @@ function App() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-x-4">
                           <button
+                            onClick={() => toggleTodo(todo._id)}
                             className={`h-6 w-6 border rounded-full flex items-center justify-center ${
                               todo.completed
                                 ? "bg-green-600 border-green-500"
                                 : "border-gray-300 hover:border-blue-400"
                             }`}
                           >
-                            {todo.completed && (
-                              <MdOutlineDone className="text-white" />
-                            )}
+                            {todo.completed && 
+                              <MdOutlineDone className="text-white" />}
                           </button>
                           <span className="text-gray-700 font-bold">
                             {todo.text}
@@ -135,7 +168,10 @@ function App() {
                           >
                             <MdModeEditOutline />
                           </button>
-                          <button className="px-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 duration-300 shadow-md font-medium cursor-pointer">
+                          <button
+                            onClick={() => deleteTodo(todo._id)}
+                            className="px-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 duration-300 shadow-md font-medium cursor-pointer"
+                          >
                             <FaTrash />
                           </button>
                         </div>

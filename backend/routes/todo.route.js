@@ -7,11 +7,11 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const todos = await Todo.find();
-        res.status(200).json(todos);
+        res.json(todos);
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
-})
+});
 
 // Create a todo
 router.post('/', async (req, res) => {
@@ -26,20 +26,20 @@ router.post('/', async (req, res) => {
     }
 })
 
-//Update a todo/ completed
+//Update a todo/completed
 router.patch('/:id', async (req, res) => {
     try {
         const todo = await Todo.findById(req.params.id);
-        if (todo) { res.status(200).json({ message: "Todo Not found" }) }
+        if (!todo) { res.status(404).json({ message: "Todo Not found" }) }
 
         if (req.body.text !== undefined) {
             todo.text = req.body.text;
         }
-        if (req.body.isCompleted !== undefined) {
-            todo.isCompleted = req.body.isCompleted;
+        if (req.body.completed !== undefined) {
+            todo.completed = req.body.completed;
         }
         const updateTodo = await todo.save();
-        res.status(200).json(updateTodo);
+        res.json(updateTodo);
     } catch (error) {
         res.status(400).json({ message: error.message })
     }
