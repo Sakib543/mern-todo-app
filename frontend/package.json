@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
-    "@vitejs/plugin-react": "^4.3.4",
     "axios": "^1.9.0",
     "mern-todo-app": "file:..",
     "react": "^19.1.0",
