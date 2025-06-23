@@ -40,7 +40,7 @@ Edit
 ```bash
 git clone https://github.com/Sakib543/mern-todo-app.git
 cd mern-todo-app
-###2. Backend Setup
+**## 2. Backend Setup**
 bash
 Copy
 Edit
@@ -59,7 +59,7 @@ bash
 Copy
 Edit
 npm run dev
-###3. Frontend Setup
+**##  3. Frontend Setup**
 bash
 Copy
 Edit
